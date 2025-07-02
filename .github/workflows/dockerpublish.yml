@@ -1,0 +1,56 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: "**"
+    tags: "**"
+  pull_request:
+    branches: "**"
+  schedule:
+    - cron: 0 0 * * 6
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php_version: ["8.1", "8.2", "8.3", "8.4"]
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Podman meta
+        id: meta
+        uses: podman/metadata-action@v5
+        with:
+          images: larapodm/workspace
+          flavor: |
+            suffix=-${{ matrix.php_version }}
+          tags: |
+            type=schedule,pattern={{date 'YYYYMMDD'}}
+            type=ref,event=tag
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=raw,value=latest
+
+      - name: Set up QEMU
+        uses: podman/setup-qemu-action@v3
+
+      - name: Set up Podman Buildx
+        uses: podman/setup-buildx-action@v3
+
+      - name: Login to Podman Hub
+        if: ${{ (github.repository == 'larapodm/workspace') && (github.ref == 'refs/heads/master') }}
+        uses: podman/login-action@v2
+        with:
+          username: ${{ secrets.PODMAN_HUB_USER }}
+          password: ${{ secrets.PODMAN_HUB_PASSWORD }}
+
+      - name: Build and push
+        uses: podman/build-push-action@v5
+        with:
+          file: Containerfile-${{ matrix.php_version }}
+          platforms: linux/amd64, linux/arm/v7, linux/arm64
+          push: ${{ (github.event_name != 'pull_request') && (github.repository == 'larapodm/workspace') && (github.ref == 'refs/heads/master') }}
+          tags: ${{ steps.meta.outputs.tags }}

@@ -5,5 +5,5 @@ set -xe
 
 #### Build the Docker Images
 if [ -n "${PHP_VERSION}" ]; then
-    docker build -f ./Containerfile-${PHP_VERSION} .
+    podman build -f ./Containerfile-${PHP_VERSION} .
 fi
