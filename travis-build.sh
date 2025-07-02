@@ -5,5 +5,5 @@ set -xe
 
 #### Build the Docker Images
 if [ -n "${PHP_VERSION}" ]; then
-    docker build -f ./Dockerfile-${PHP_VERSION} .
+    docker build -f ./Containerfile-${PHP_VERSION} .
 fi

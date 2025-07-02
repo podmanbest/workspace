@@ -6,10 +6,10 @@ build: all
 
 all:
 	@for v in $(VERSIONS); do \
-		docker build -f ./Dockerfile-$$v -t php-fpm:dev-$$v . ; \
+		docker build -f ./Containerfile-$$v -t php-fpm:dev-$$v . ; \
 	done
 
 all-nc:
 	@for v in $(VERSIONS); do \
-		docker build -f ./Dockerfile-$$v -t php-fpm:dev-$$v --no-cache --pull . ; \
+		docker build -f ./Containerfile-$$v -t php-fpm:dev-$$v --no-cache --pull . ; \
 	done
